@@ -1,0 +1,1 @@
+docker run -it -p 5001:443 -e AzureConnectionString=$(terraform output -state="..\Infra\terraform.tfstate" AzureConnectionString) -e KeyVaultName=$(terraform output -state="..\Infra\terraform.tfstate" KeyVaultName) -e CertificateName=$(terraform output -state="..\Infra\terraform.tfstate" CertificateName) h2floh/kitedemoapi 
