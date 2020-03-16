@@ -33,10 +33,12 @@ namespace PlatformAPI.Controllers
         };
 
         private readonly ILogger<VehicleController> _logger;
+        private readonly Services.IoTService _service;
 
-        public VehicleController(ILogger<VehicleController> logger)
+        public VehicleController(ILogger<VehicleController> logger, Services.IoTService service)
         {
             _logger = logger;
+            _service = service;
         }
 
         [HttpGet]
@@ -61,6 +63,38 @@ namespace PlatformAPI.Controllers
                 Brand = VehicleBrands[rng.Next(VehicleBrands.Length)]
             })
             .ToArray();
+        }
+
+        [HttpPost(Name = "background")]
+        public void Post(BackgroundImage content)
+        {
+            try
+            {
+                HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByAPI);
+            }
+            catch (AuthenticationException e)
+            {
+                _logger.LogError(e.Message);
+                HttpContext.Response.StatusCode = 401;
+                HttpContext.Response.Headers.Add("Exception", e.Message);
+            }
+
+            try
+            {
+                _logger.LogInformation(Newtonsoft.Json.JsonConvert.SerializeObject(content));
+                _service.SendMessage(content);
+                HttpContext.Response.StatusCode = 200;
+
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
+            catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogError(e.Message);
+                HttpContext.Response.StatusCode = 500;
+                HttpContext.Response.Headers.Add("Exception", e.Message);
+            }
+            
         }
     }
 

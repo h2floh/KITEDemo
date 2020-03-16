@@ -20,3 +20,6 @@ output "Scope" {
 output "CertificateName" {
   value = azurerm_key_vault_certificate.APISSL.name
 }
+output "IoTHubName" {
+  value = azurerm_iothub.KITEHub.name
+}

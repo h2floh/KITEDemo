@@ -116,6 +116,13 @@ resource "azurerm_key_vault_secret" "AzureAdAPIName" {
 #   key_vault_id = azurerm_key_vault.KITEDemoApp.id
 # }
 
+#IoT Hub Connection String
+resource "azurerm_key_vault_secret" "IoTHubSAP" {
+  name         = "IoTHubConnectionString"
+  value        = azurerm_iothub_shared_access_policy.KITEBackend.primary_connection_string
+  key_vault_id = azurerm_key_vault.KITEDemoApp.id
+}
+
 resource "azurerm_key_vault_certificate" "APISSL" {
   name         = var.APISSLkey
   key_vault_id = azurerm_key_vault.KITEDemoApp.id

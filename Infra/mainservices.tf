@@ -9,7 +9,7 @@ resource "azurerm_container_group" "BackendAPI" {
   restart_policy      = "Never"
 
   container {
-    name   = "letsencrypt"
+    name   = "backendapi"
     image  = var.backendimage
     cpu    = "0.5"
     memory = "1"
@@ -32,5 +32,26 @@ resource "azurerm_container_group" "BackendAPI" {
   identity {
     type = "SystemAssigned"
   }
+}
+
+// IoT Hub
+resource "azurerm_iothub" "KITEHub" {
+  name                = "${var.application_name}-iothub"
+  location            = azurerm_resource_group.KITEDemoApp.location
+  resource_group_name = azurerm_resource_group.KITEDemoApp.name
+
+  sku {
+    name     = "F1"
+    capacity = "1"
+  }
+}
+
+// IoT Hub Shared Access Policy
+resource "azurerm_iothub_shared_access_policy" "KITEBackend" {
+  name                = "KITEBackend"
+  resource_group_name = azurerm_resource_group.KITEDemoApp.name
+  iothub_name         = azurerm_iothub.KITEHub.name
+
+  service_connect = true
 }
 

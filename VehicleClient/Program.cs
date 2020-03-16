@@ -2,8 +2,11 @@
 
 namespace VehicleClient
 {
+    using Microsoft.Azure.Devices.Client;
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -15,8 +18,14 @@ namespace VehicleClient
         // DeviceId
         // private static readonly string VehicleId = Environment.GetEnvironmentVariable("DeviceId");
 
+        // DeviceClient
+        private static DeviceClient _deviceClient = DeviceClient.CreateFromConnectionString(Environment.GetEnvironmentVariable("ConnectionString"), TransportType.Mqtt);
+
         // VideoPlayer
         private static readonly VideoPlayer vPlayer = new VideoPlayer();
+
+        // ImageNumber
+        private static int imageNumber = 0;
 
         static void Main()
         {
@@ -24,6 +33,7 @@ namespace VehicleClient
 
             var tasks = new List<Task>();
             tasks.Add(VideoLoop(cts.Token));
+            tasks.Add(MessageReceiveLoop(cts.Token));
             Task.WaitAll(tasks.ToArray());
 
             cts.Dispose();
@@ -38,9 +48,37 @@ namespace VehicleClient
                 j++;
                 Console.Clear();
 
-                vPlayer.ShowNextFrame(j);
+                vPlayer.ShowNextFrame((imageNumber % 6) + 1);
 
                 await Task.Delay(1000).ConfigureAwait(false);
+            }
+        }
+
+        async static Task MessageReceiveLoop(CancellationToken ct)
+        {
+            // Main Loop
+            while (!ct.IsCancellationRequested)
+            {
+                Message receivedMessage;
+                string messageData;
+
+                receivedMessage = await _deviceClient.ReceiveAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+
+                if (receivedMessage != null)
+                {
+                    messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+                    // Console.WriteLine("\t{0}> Received message: {1}", DateTime.Now.ToLocalTime(), messageData);
+                    try
+                    {
+                        imageNumber = Convert.ToInt32(messageData, CultureInfo.InvariantCulture);
+                    } catch (FormatException)
+                    {
+
+                    }
+                    
+
+                    await _deviceClient.CompleteAsync(receivedMessage).ConfigureAwait(false);
+                }
             }
         }
     }

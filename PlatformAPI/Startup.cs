@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using System.Globalization;
 
 namespace PlatformAPI
 {
@@ -38,7 +39,9 @@ namespace PlatformAPI
                 options.TokenValidationParameters.ValidAudiences = new []
                 {
                     options.Audience,
-                    $"api://" + Configuration["APIName"]
+                    $"api://" + Configuration["APIName"],
+                    @"https://management.core.windows.net/",
+                    @"https://management.azure.com/"
                 };
             });
 
@@ -48,7 +51,7 @@ namespace PlatformAPI
                 swagger.SwaggerDoc("v1", new OpenApiInfo { Title = Configuration["APIName"] });
 
                 // Define the OAuth2.0 scheme that's in use (i.e. Implicit Flow)
-                string uri = String.Format("https://login.microsoftonline.com/{0}/oauth2/v2.0/authorize", Configuration["AzureAd:TenantId"]);
+                string uri = String.Format(CultureInfo.InvariantCulture, "https://login.microsoftonline.com/{0}/oauth2/v2.0/authorize", Configuration["AzureAd:TenantId"]);
 
                 swagger.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                 {
@@ -81,6 +84,9 @@ namespace PlatformAPI
             });
 
             services.AddControllers();
+
+            // Add IoTHub Service
+            services.AddSingleton<Services.IoTService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
