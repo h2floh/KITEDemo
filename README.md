@@ -1,15 +1,6 @@
 # KITEDemo
 Demo environment for KITE
 
-## Create Infrastructure
-
-```bash
-cd Infra
-terraform init
-terraform plan
-terraform apply
-```
-
 ## Create or renew certificate
 
 ```bash
@@ -28,17 +19,35 @@ openssl pkcs12 -inkey privkey.pem -in fullchain.pem -export -out sslcert.pfx -pa
 az keyvault certificate import --vault-name KEY_VAULT_NAME -n ssl -f sslcert.pfx --password $PFX_EXPORT_PASSWORD
 ```
 
-## Run local container
+## Create Infrastructure
+
+```bash
+cd Infra
+.\upsertinfra.ps1 -REPLYURL YOUR_DOMAIN -PASSWORD $PFX_EXPORT_PASSWORD
+```
+
+## DNS Setting
+
+Ensure you create a CNAME for YOUR_DOMAIN towards the ACI fqdn (included in terraform output)
+
+## Run local container (only for debug)
 
 ```bash
 cd Scripts
 .\runapidocker.ps1
 ```
 
+## Run device container
+
+```bash
+cd Scripts
+.\runclientdocker.ps1
+```
+
 ## Get PlatformAPI Access Token
 
 Easy:
-test on Swagger endpoint https://localhost:5001/swagger
+Test on Swagger endpoint https://YOUR_DOMAIN/swagger or local https://localhost:5001/swagger
 
 Fiddler/Postman:
 Get login URL -> LogIn -> Extract Access Token to use as Bearer token towards API
