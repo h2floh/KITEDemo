@@ -25,7 +25,8 @@ namespace VehicleClient
         private static readonly VideoPlayer vPlayer = new VideoPlayer();
 
         // ImageNumber
-        private static int imageNumber = 0;
+        private static int imageNumber = -1;
+        private static int imageNumberNext = 0;
 
         static void Main()
         {
@@ -46,9 +47,13 @@ namespace VehicleClient
             while (!ct.IsCancellationRequested)
             {
                 j++;
-                Console.Clear();
-
-                vPlayer.ShowNextFrame((imageNumber % 6) + 1);
+                if (imageNumberNext != imageNumber)
+                {
+                    Console.Clear();
+                    vPlayer.ShowNextFrame((imageNumberNext % 6) + 1);
+                    imageNumber = imageNumberNext;
+                }
+                
 
                 await Task.Delay(1000).ConfigureAwait(false);
             }
@@ -70,7 +75,7 @@ namespace VehicleClient
                     // Console.WriteLine("\t{0}> Received message: {1}", DateTime.Now.ToLocalTime(), messageData);
                     try
                     {
-                        imageNumber = Convert.ToInt32(messageData, CultureInfo.InvariantCulture);
+                        imageNumberNext = Convert.ToInt32(messageData, CultureInfo.InvariantCulture);
                     } catch (FormatException)
                     {
 
