@@ -56,3 +56,18 @@ Get login URL -> LogIn -> Extract Access Token to use as Bearer token towards AP
 cd Scripts
 .\getloginurl.ps1
 ```
+
+## Debug Keystore (Android)
+
+See: https://coderwall.com/p/r09hoq/android-generate-release-debug-keystores
+
+```bash
+
+keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Keystore name: "debug.keystore"
+Keystore password: "android"
+Key alias: "androiddebugkey"
+Key password: "android"
+CN: "CN=Android Debug,O=Android,C=US"

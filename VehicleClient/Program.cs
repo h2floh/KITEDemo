@@ -55,7 +55,7 @@ namespace VehicleClient
                 }
                 
 
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 
@@ -78,7 +78,7 @@ namespace VehicleClient
                         imageNumberNext = Convert.ToInt32(messageData, CultureInfo.InvariantCulture);
                     } catch (FormatException)
                     {
-
+                        Console.WriteLine("Error while converting to Int\t{0}> Received message: {1}", DateTime.Now.ToLocalTime(), messageData);
                     }
                     
 
