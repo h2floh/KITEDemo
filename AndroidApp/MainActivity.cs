@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
 using Android.Support.Design.Widget;
@@ -15,15 +17,6 @@ using Microsoft.Identity.Client;
 
 namespace AndroidApp
 {
-    [Activity]
-    [IntentFilter(new[] { Intent.ActionView },
-      Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault },
-      DataHost = "com.companyname.androidapp",
-      DataScheme = "msauth",
-      DataPath = "/DWxBsg/Q8zSqNAzwnqv6YIZbJr4=")]
-    public class MsalActivity : BrowserTabActivity
-    {
-    }
 
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
@@ -35,15 +28,8 @@ namespace AndroidApp
         // https://docs.microsoft.com/en-us/azure/active-directory/develop/tutorial-v2-android
         // https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/wiki/Xamarin-Android-specifics
 
-        private string _accessToken;
-
-        // These values have all to be updated if the app is created again
-        string APIUrl = $"https://kite.cse.msft.flow-soft.com/Vehicle";
-        private string tenant = "001ceeb6-e0d3-42e0-88fb-0e388f8c6675";
-        private string clientid = "dfd5c23a-b4a9-46fb-ae2f-86d9dec12eff";
-        //
-
-        private string redirect_uri = "msauth://com.companyname.androidapp/DWxBsg%2FQ8zSqNAzwnqv6YIZbJr4%3D";
+        private AppConfiguration _config; 
+        private string _accessToken = "Error - no access token request started";
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -54,24 +40,23 @@ namespace AndroidApp
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
 
-            //Task.Run(async () =>
-            //{
-            //    await RefreshAccessTokenAsync().ConfigureAwait(false);
-            //});
-
-            // See https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/wiki/Xamarin-Android-specifics
-            Task.Run(async () =>
-            {
-                await LoginAsync().ConfigureAwait(false);
-            });
-
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             fab.Click += FabOnClick;
 
             Button update = FindViewById<Button>(Resource.Id.update);
             update.Click += OnButtonClicked;
 
+            // Configuration
+            AssetManager assets = this.Assets;
+            _config = AppConfiguration.Config(assets.Open("settings.json"));
 
+            // See https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/wiki/Xamarin-Android-specifics
+            // Moved this to login button
+            //Task.Run(async () =>
+            //{
+            //    await LoginAsync().ConfigureAwait(false);
+            //    update.Text = "Update";
+            //});
         }
 
         public override bool OnCreateOptionsMenu(IMenu menu)
@@ -111,25 +96,36 @@ namespace AndroidApp
             EditText vehicleId = FindViewById<EditText>(Resource.Id.vehicleId);
             TextView status = FindViewById<TextView>(Resource.Id.status);
 
-            RunOnUiThread(async () =>
+            if ((sender as Button).Text == "Login")
             {
-                if (_accessToken.StartsWith(@"Error"))
+                Task.Run(async () =>
                 {
-                    status.Text = "No access Token";
-                }
-                else
+                    await LoginAsync().ConfigureAwait(false);
+                    (sender as Button).Text = "Update";
+                });
+            }
+            else
+            {
+                RunOnUiThread(async () =>
                 {
-                    //(sender as Button).Text = "Click me again!";
-                    status.Text = await VehicleAPICallAsync(vehicleId.Text, backgroundId.Text).ConfigureAwait(true);
-                }
-            });
+                    if (_accessToken.StartsWith(@"Error"))
+                    {
+                        status.Text = _accessToken;
+                    }
+                    else
+                    {
+                        //(sender as Button).Text = "Click me again!";
+                        status.Text = await VehicleAPICallAsync(vehicleId.Text, backgroundId.Text).ConfigureAwait(true);
+                    }
+                });
+            }
         }
 
         async Task<string> VehicleAPICallAsync(string vehicleId, string backgroundId)
         {
             
             var httpClient = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler());
-            var request = new HttpRequestMessage(HttpMethod.Post, APIUrl);
+            var request = new HttpRequestMessage(HttpMethod.Post, _config.apiUrl);
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
             var body = @"{ ""vehicleId"" : " + vehicleId +
@@ -158,10 +154,10 @@ namespace AndroidApp
         async Task LoginAsync()
         {
 
-            var _app = PublicClientApplicationBuilder.Create(clientid)
-                .WithRedirectUri(redirect_uri)
+            var _app = PublicClientApplicationBuilder.Create(_config.clientId)
+                .WithRedirectUri(_config.redirect_uri)
                 .WithParentActivityOrWindow(() => this)
-                .WithTenantId(tenant)
+                .WithTenantId(_config.tenant)
                 .Build();
 
             // always want to login
@@ -169,7 +165,7 @@ namespace AndroidApp
             var accounts = await _app.GetAccountsAsync();
             IAccount account = accounts.FirstOrDefault<IAccount>();
 
-            string[] scopes = new string[] { "openid", "offline_access", "api://KiteDemoPlatformAPI/user_impersonation" };
+            string[] scopes = _config.scopes;
 
             try
             {
@@ -188,44 +184,6 @@ namespace AndroidApp
             _accessToken = result.AccessToken;
         }
 
-        // Keeping code for reuse in other apps/demos
-        async Task RefreshAccessTokenAsync()
-        {
-            var scopes = System.Net.WebUtility.UrlEncode("openid offline_access api://KiteDemoPlatformAPI/user_impersonation");
-            var redirect_uri = System.Net.WebUtility.UrlEncode("https://kite.cse.msft.flow-soft.com");
-            var client_secret = System.Net.WebUtility.UrlEncode(@""); // Not good security practice to store secret in app
-            var refresh_token = @""; // Refresh Token of one user, should be stored externally, this was for demo purposes 
-
-            string tokenUrl = $"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token";
-            var httpClient = new HttpClient(new Xamarin.Android.Net.AndroidClientHandler());
-            var request = new HttpRequestMessage(HttpMethod.Post, tokenUrl);
-
-            var body = $"client_id={clientid}" +
-             $"&scope={scopes}" +
-             $"&redirect_uri={redirect_uri}" +
-             @"&grant_type=refresh_token" +
-             $"&client_secret={client_secret}" +
-             $"&refresh_token={refresh_token}";
-
-            request.Content = new StringContent(body, Encoding.UTF8, "application/x-www-form-urlencoded");
-
-            try
-            {
-                HttpResponseMessage response = await httpClient.SendAsync(request).ConfigureAwait(false);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var statusCode = response.StatusCode;
-                    throw new Exception(statusCode.ToString());
-                }
-                var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var json = Newtonsoft.Json.Linq.JObject.Parse(content);
-                _accessToken = json["access_token"].ToString();
-            }
-            catch (Exception e)
-            {
-                _accessToken = $"Error: {e.Message}";
-            }
-        }
 
         protected override void OnActivityResult(int requestCode,
                                          Result resultCode, Intent data)

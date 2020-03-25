@@ -9,4 +9,4 @@ param(
 
 # Write-Host $TerraformStateFile
 # Write-Host "terraform output -state='$TerraformStateFile' IoTHubName"
-docker run -it -e ConnectionString=$(az iot hub device-identity show-connection-string --hub-name $(terraform output -state="$TerraformStateFile" IoTHubName) --device-id $DeviceId --output tsv) h2floh/kitedemoclient
+docker run --name "vehicle$DeviceId" -it -e ConnectionString=$(az iot hub device-identity show-connection-string --hub-name $(terraform output -state="$TerraformStateFile" IoTHubName) --device-id $DeviceId --output tsv) h2floh/kitedemoclient

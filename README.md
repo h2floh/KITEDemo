@@ -1,5 +1,10 @@
 # KITEDemo
+
 Demo environment for KITE
+
+## Architecture - what its all about
+
+![architecture](Docs/architecture.png)
 
 ## Create or renew certificate
 
@@ -23,7 +28,7 @@ az keyvault certificate import --vault-name KEY_VAULT_NAME -n ssl -f sslcert.pfx
 
 ```bash
 cd Infra
-.\upsertinfra.ps1 -REPLYURL YOUR_DOMAIN -PASSWORD $PFX_EXPORT_PASSWORD
+.\upsertinfra.ps1 -REPLYURL YOUR_DOMAIN_INCLUDE_HTTPS -PASSWORD $PFX_EXPORT_PASSWORD
 ```
 
 ## DNS Setting
@@ -57,7 +62,14 @@ cd Scripts
 .\getloginurl.ps1
 ```
 
-## Debug Keystore (Android)
+## Create settings.json file for Android App
+
+```bash
+cd Scripts
+.\createandroidappsettings.ps1
+```
+
+## Debug Keystore (Android) - already created and checked into repo just FYI
 
 See: https://coderwall.com/p/r09hoq/android-generate-release-debug-keystores
 
