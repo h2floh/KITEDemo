@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:minWidth="25px"
+	android:minHeight="25px"
+	android:paddingTop="200px"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:id="@+id/relativeLayout1" >
+
+	<Space
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:minHeight="70px"
+		android:id="@+id/space1" />
+	
+	<TextView
+		android:text="VehicleId"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/space1"
+		android:id="@+id/textView1" />
+
+	<EditText
+		android:inputType="number"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/textView1"
+		android:id="@+id/vehicleId" />
+
+	<Space
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/vehicleId"
+		android:minHeight="10px"
+		android:id="@+id/space2" />
+
+	<TextView
+		android:text="BackgroundImage"
+		android:textAppearance="?android:attr/textAppearanceMedium"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/space2"
+		android:id="@+id/textView2" />
+
+	<EditText
+		android:inputType="number"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/textView2"
+		android:id="@+id/BackgroundImage" />
+
+	<Space
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/BackgroundImage"
+		android:minHeight="10px"
+		android:id="@+id/space3" />
+    <Button
+        android:text="Login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/space3"
+        android:layout_centerInParent="true"
+        android:id="@+id/update" />
+
+    <TextView
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/update"
+        android:layout_centerInParent="true"
+		android:id="@+id/status" />
+
+
+
+</RelativeLayout>

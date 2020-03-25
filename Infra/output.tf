@@ -23,3 +23,6 @@ output "CertificateName" {
 output "IoTHubName" {
   value = azurerm_iothub.KITEHub.name
 }
+output "DNSLabel" {
+  value = azurerm_container_group.BackendAPI.fqdn
+}

@@ -2,7 +2,7 @@
 resource "azuread_application" "KITEDemoApp" {
     name                       = var.application_name
     identifier_uris            = ["api://${var.application_name}"]
-    reply_urls                 = ["https://localhost:5001/", "https://localhost:5001/swagger/oauth2-redirect.html", var.reply_url, "${var.reply_url}/swagger/oauth2-redirect.html", "https://global.consent.azure-apim.net/redirect"]
+    reply_urls                 = ["msauth://com.companyname.androidapp/DWxBsg%2FQ8zSqNAzwnqv6YIZbJr4%3D", "https://localhost:5001/", "https://localhost:5001/swagger/oauth2-redirect.html", var.reply_url, "${var.reply_url}/swagger/oauth2-redirect.html", "https://global.consent.azure-apim.net/redirect"]
     available_to_other_tenants = true
     oauth2_allow_implicit_flow = true
     type                       = "webapp/api"
